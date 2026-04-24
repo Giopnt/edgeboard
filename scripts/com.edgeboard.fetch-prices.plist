@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.edgeboard.fetch-prices</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>VENV_PYTHON_PLACEHOLDER</string>
+        <string>SCRIPT_PATH_PLACEHOLDER/fetch_prices.py</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONPATH</key>
+        <string>PROJECT_PATH_PLACEHOLDER/backend</string>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>PROJECT_PATH_PLACEHOLDER/backend</string>
+
+    <!-- Run at 7:30 AM every weekday (Mon–Fri) -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>30</integer></dict>
+        <dict><key>Weekday</key><integer>2</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>30</integer></dict>
+        <dict><key>Weekday</key><integer>3</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>30</integer></dict>
+        <dict><key>Weekday</key><integer>4</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>30</integer></dict>
+        <dict><key>Weekday</key><integer>5</integer><key>Hour</key><integer>7</integer><key>Minute</key><integer>30</integer></dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>PROJECT_PATH_PLACEHOLDER/logs/fetch_prices.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>PROJECT_PATH_PLACEHOLDER/logs/fetch_prices_error.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
