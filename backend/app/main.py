@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,10 +13,19 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS — allow local frontend dev server
+# CORS — allow local dev + any Vercel deployment
+_extra_origins = os.environ.get("ALLOWED_ORIGINS", "")
+_extra = [o.strip() for o in _extra_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://edgeboard-black.vercel.app",
+        "https://*.vercel.app",
+        *_extra,
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

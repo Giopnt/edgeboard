@@ -3,48 +3,46 @@ import sys
 from pathlib import Path
 from logging.config import fileConfig
 
-# Make sure 'app' is importable when Alembic runs
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from dotenv import load_dotenv
 
-# Load .env so DATABASE_URL is available
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 load_dotenv()
 
-# Alembic config object
 config = context.config
 
-# Override sqlalchemy.url from environment
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+# Railway provides several possible variable names — try all
+db_url = (
+    os.environ.get("DATABASE_URL") or
+    os.environ.get("DATABASE_PRIVATE_URL") or
+    os.environ.get("POSTGRES_URL") or
+    "postgresql://localhost/edgeboard_dev"
+)
 
-# Logging
+# Railway uses postgres:// but SQLAlchemy needs postgresql://
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+config.set_main_option("sqlalchemy.url", db_url)
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Import Base + all models so Alembic can detect them
 from app.db.database import Base
-import app.models  # noqa: F401 — triggers all model imports
+import app.models  # noqa: F401
 
 target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    """Run migrations without a live DB connection (generates SQL only)."""
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(
-        url=url,
-        target_metadata=target_metadata,
-        literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
-    )
+    context.configure(url=url, target_metadata=target_metadata, literal_binds=True, dialect_opts={"paramstyle": "named"})
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online() -> None:
-    """Run migrations against a live DB connection."""
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
