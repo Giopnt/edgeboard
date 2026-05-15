@@ -1,15 +1,25 @@
+import os
 import logging
-import yfinance as yf
+import pandas as pd
 
-from app.services.yf_session import get_history, get_ticker
-from app.services.live_radar_service import _build_df, _scan_df, _generate_insight
+from app.services.live_radar_service import _build_df, _scan_df, _generate_insight, _get_price_data
 
 logger = logging.getLogger(__name__)
 
 
 def search_stocks(query: str) -> list[dict]:
-    """Search for stocks worldwide by name or ticker."""
+    """Search for stocks by name or ticker."""
+    av_key = os.environ.get("ALPHA_VANTAGE_KEY") or os.environ.get("AV_KEY")
+
+    if av_key:
+        from app.services.av_service import search_symbol
+        results = search_symbol(query)
+        if results:
+            return results
+
+    # Fallback to yfinance search
     try:
+        import yfinance as yf
         from app.services.yf_session import get_session
         results = yf.Search(query, max_results=10, session=get_session())
         quotes = results.quotes if hasattr(results, 'quotes') else []
@@ -29,17 +39,17 @@ def search_stocks(query: str) -> list[dict]:
             })
         return stocks[:8]
     except Exception as e:
-        logger.error(f"Stock search failed for '{query}': {e}")
+        logger.error(f"Search fallback failed: {e}")
         return []
 
 
 def live_scan_symbol(symbol: str) -> dict:
-    """Fetch live data and run full signal detection on any stock ticker."""
+    """Run full signal detection on any stock ticker."""
     symbol = symbol.upper().strip()
     try:
-        hist = get_history(symbol, period="6mo")
+        price_df = _get_price_data(symbol)
 
-        if hist.empty:
+        if price_df.empty:
             return {
                 "symbol":  symbol,
                 "has_data": False,
@@ -48,17 +58,22 @@ def live_scan_symbol(symbol: str) -> dict:
                 "insight": None,
             }
 
+        # Try to get name/sector
+        name = symbol; sector = "—"; currency = "USD"; exchange = ""
         try:
-            ticker    = get_ticker(symbol)
+            import yfinance as yf
+            from app.services.yf_session import get_session
+            ticker    = yf.Ticker(symbol, session=get_session())
+            info      = ticker.fast_info
             full_info = ticker.info
             name      = full_info.get("longName") or full_info.get("shortName") or symbol
             sector    = full_info.get("sector") or full_info.get("industry") or "—"
             currency  = full_info.get("currency", "USD")
-            exchange  = full_info.get("exchange") or full_info.get("market", "")
+            exchange  = full_info.get("exchange") or ""
         except Exception:
-            name = symbol; sector = "—"; currency = "USD"; exchange = ""
+            pass
 
-        df   = _build_df(hist)
+        df   = _build_df(price_df)
         scan = _scan_df(symbol, df)
 
         if scan is None:
