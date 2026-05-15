@@ -1,14 +1,16 @@
 import { Routes, Route, NavLink } from 'react-router-dom'
-import { LayoutDashboard, ListPlus, ShieldAlert, Zap, History, Radio } from 'lucide-react'
-import Dashboard    from './pages/Dashboard.jsx'
-import Portfolio    from './pages/Portfolio.jsx'
-import Signals      from './pages/Signals.jsx'
+import { LayoutDashboard, ListPlus, ShieldAlert, Zap, History, Radio, Search } from 'lucide-react'
+import Dashboard     from './pages/Dashboard.jsx'
+import Portfolio     from './pages/Portfolio.jsx'
+import Signals       from './pages/Signals.jsx'
 import Opportunities from './pages/Opportunities.jsx'
-import Watchlist    from './pages/Watchlist.jsx'
-import MarketRadar  from './pages/MarketRadar.jsx'
+import Watchlist     from './pages/Watchlist.jsx'
+import MarketRadar   from './pages/MarketRadar.jsx'
+import StockSearch   from './pages/StockSearch.jsx'
 
 const NAV = [
   { to: '/',              icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/search',        icon: Search,          label: 'Stock Search' },
   { to: '/watchlist',     icon: ListPlus,        label: 'Watchlist' },
   { to: '/portfolio',     icon: ShieldAlert,     label: 'Risk' },
   { to: '/signals',       icon: Zap,             label: 'Signals' },
@@ -47,6 +49,7 @@ export default function App() {
       <main className="main">
         <Routes>
           <Route path="/"              element={<Dashboard />} />
+          <Route path="/search"        element={<StockSearch />} />
           <Route path="/watchlist"     element={<Watchlist />} />
           <Route path="/portfolio"     element={<Portfolio />} />
           <Route path="/signals"       element={<Signals />} />

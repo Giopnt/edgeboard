@@ -1,4 +1,4 @@
-const BASE = '/api'
+const BASE = (import.meta.env.VITE_API_URL || '') + '/api'
 
 async function get(path) {
   const res = await fetch(`${BASE}${path}`)
@@ -67,3 +67,7 @@ export const getWatchlistOpportunities = () =>
 export const getPopularStocks = () => get('/market/popular')
 export const getMarketRadar = () => get('/market/radar')
 export const getWatchlistRadar = () => get('/market/radar/watchlist')
+
+// Search + scan any stock
+export const searchStocks = (q) => get(`/market/search?q=${encodeURIComponent(q)}`)
+export const scanAnySymbol = (symbol) => get(`/market/scan/${symbol.toUpperCase()}`)

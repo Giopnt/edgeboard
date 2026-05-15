@@ -32,8 +32,8 @@ def scan_rsi(df: pd.DataFrame) -> dict | None:
     if pd.isna(rsi):
         return None
 
-    if rsi < 35:
-        severity = "strong" if rsi < 25 else "moderate"
+    if rsi < 40:
+        severity = "strong" if rsi < 30 else "moderate"
         return {
             "signal_type": "rsi_oversold",
             "direction": "bullish",
@@ -45,8 +45,8 @@ def scan_rsi(df: pd.DataFrame) -> dict | None:
             "value": round(float(rsi), 2),
         }
 
-    if rsi > 65:
-        severity = "strong" if rsi > 75 else "moderate"
+    if rsi > 60:
+        severity = "strong" if rsi > 70 else "moderate"
         return {
             "signal_type": "rsi_overbought",
             "direction": "bearish",
@@ -73,7 +73,7 @@ def scan_volume(df: pd.DataFrame) -> dict | None:
     zscore = latest.get("volume_zscore")
     pct_change = latest.get("pct_change", 0)
 
-    if pd.isna(zscore) or zscore < 2.0:
+    if pd.isna(zscore) or zscore < 1.5:
         return None
 
     direction = "bullish" if (pct_change or 0) >= 0 else "bearish"
@@ -155,7 +155,7 @@ def scan_price_momentum(df: pd.DataFrame, lookback: int = 5) -> dict | None:
 
     momentum_pct = round(((latest_close - past_close) / past_close) * 100, 2)
 
-    if abs(momentum_pct) < 4.0:
+    if abs(momentum_pct) < 3.0:
         return None
 
     direction = "bullish" if momentum_pct > 0 else "bearish"

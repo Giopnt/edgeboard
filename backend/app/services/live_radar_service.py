@@ -275,31 +275,21 @@ def run_live_radar() -> dict:
 
     logger.info(f"Live radar: downloading data for {len(symbols)} symbols...")
 
-    try:
-        raw = yf.download(
-            symbols,
-            period="6mo",
-            auto_adjust=True,
-            progress=False,
-            group_by="ticker",
-        )
-    except Exception as e:
-        logger.error(f"Live radar batch download failed: {e}")
-        return {"error": str(e), "insights": [], "scanned": 0}
-
     insights = []
     failed = []
 
+    # Download each ticker individually — more reliable than batch for mixed exchanges
     for sym in symbols:
         try:
-            # Extract this symbol's data from the batch download
-            if len(symbols) == 1:
-                hist = raw
-            else:
-                if sym not in raw.columns.get_level_values(0):
-                    failed.append(sym)
-                    continue
-                hist = raw[sym].dropna(how="all")
+            ticker_obj = yf.Ticker(sym)
+            hist = ticker_obj.history(period="6mo")
+
+            if hist.empty or len(hist) < 20:
+                hist = ticker_obj.history(period="3mo")
+
+            if hist.empty or len(hist) < 15:
+                failed.append(sym)
+                continue
 
             df = _build_df(hist)
             scan = _scan_df(sym, df)
